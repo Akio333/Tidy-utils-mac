@@ -6,26 +6,35 @@ final class CleanerService: ObservableObject {
     @Published private(set) var isScanning = false
     @Published var status = "Scan for reclaimable files when you’re ready."
 
+    var selectedCount: Int { items.filter(\.selected).count }
+    var selectedSize: Int64 { items.filter(\.selected).map(\.size).reduce(0, +) }
+    var allSelected: Bool { !items.isEmpty && items.allSatisfy(\.selected) }
+
     func scan() {
         isScanning = true
         status = "Scanning common cache locations…"
-        let paths: [(String, String, URL)] = [
-            ("Application caches", "Caches", FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Caches")),
-            ("Application logs", "Logs", FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs")),
-            ("Trash", "Trash", FileManager.default.homeDirectoryForCurrentUser.appending(path: ".Trash")),
-            ("Homebrew cache", "Homebrew", FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Caches/Homebrew"))
+        let roots: [(String, URL)] = [
+            ("Application Caches", FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Caches")),
+            ("Application Logs", FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs")),
+            ("Trash", FileManager.default.homeDirectoryForCurrentUser.appending(path: ".Trash")),
+            ("Homebrew Cache", FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Caches/Homebrew"))
         ]
-        Task.detached { [paths] in
+        Task.detached { [roots] in
             let manager = FileManager.default
-            let result = paths.compactMap { name, category, url -> CleanableItem? in
-                guard manager.fileExists(atPath: url.path) else { return nil }
-                let size = Self.directorySize(url, manager: manager)
-                return CleanableItem(id: url, name: name, location: url.path, category: category, url: url, size: size)
+            var result = roots.flatMap { category, root in
+                Self.items(in: root, category: category, manager: manager)
+            }
+            // Homebrew has its own category, so do not show it twice under application caches.
+            result.removeAll { $0.category == "Application Caches" && $0.name == "Homebrew" }
+            result.sort {
+                $0.category == $1.category
+                    ? $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    : $0.category < $1.category
             }
             await MainActor.run {
                 self.items = result
                 self.isScanning = false
-                self.status = result.isEmpty ? "Nothing obvious to clean." : "Found \(result.map(\.size).reduce(0, +).tidySize) available to review."
+                self.status = result.isEmpty ? "Nothing obvious to clean." : "Found \(result.count) folders and files totaling \(result.map(\.size).reduce(0, +).tidySize)."
             }
         }
     }
@@ -33,6 +42,10 @@ final class CleanerService: ObservableObject {
     func toggle(_ item: CleanableItem) {
         guard let index = items.firstIndex(of: item) else { return }
         items[index].selected.toggle()
+    }
+
+    func setAllSelected(_ selected: Bool) {
+        for index in items.indices { items[index].selected = selected }
     }
 
     func cleanSelected() {
@@ -58,4 +71,14 @@ final class CleanerService: ObservableObject {
         }
         return total
     }
+
+    nonisolated private static func items(in root: URL, category: String, manager: FileManager) -> [CleanableItem] {
+        guard let urls = try? manager.contentsOfDirectory(at: root, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey], options: [.skipsHiddenFiles]) else { return [] }
+        return urls.map { url in
+            let values = try? url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+            let size = values?.isRegularFile == true ? Int64(values?.fileSize ?? 0) : directorySize(url, manager: manager)
+            return CleanableItem(id: url, name: url.lastPathComponent, location: url.path, category: category, url: url, size: size)
+        }
+    }
+
 }

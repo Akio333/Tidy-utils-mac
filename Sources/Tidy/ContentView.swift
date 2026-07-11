@@ -1,32 +1,56 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selection: AppSection? = .dashboard
+    @EnvironmentObject private var state: AppState
 
     var body: some View {
         NavigationSplitView {
-            List(AppSection.allCases, selection: $selection) { section in
-                Label(section.title, systemImage: section.icon)
-                    .tag(section)
+            List(AppSection.allCases) { section in
+                Button {
+                    state.selectedSection = section
+                } label: {
+                    Label(section.title, systemImage: section.icon)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(state.selectedSection == section ? Color.accentColor.opacity(0.16) : Color.clear)
             }
             .navigationTitle("Tidy")
             .listStyle(.sidebar)
         } detail: {
             Group {
-                switch selection ?? .dashboard {
-                case .dashboard: DashboardView()
-                case .cleaning: CleaningView()
-                case .displays: DisplayView()
-                case .mouse: MouseView()
+                switch state.selectedSection {
+                case .dashboard: DashboardView(monitor: state.monitor)
+                case .cleaning: CleaningView(service: state.cleaner)
+                case .displays: DisplayView(service: state.display)
+                case .mouse: MouseView(service: state.mouse)
                 }
             }
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text((selection ?? .dashboard).title).font(.headline)
+                    Text(state.selectedSection.title).font(.headline)
                 }
             }
         }
         .tint(.indigo)
+        .background(MainWindowReader { window in
+            state.mainWindow.window = window
+        })
+    }
+}
+
+private struct MainWindowReader: NSViewRepresentable {
+    let onResolve: @MainActor (NSWindow?) -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async { onResolve(view.window) }
+        return view
+    }
+
+    func updateNSView(_ view: NSView, context: Context) {
+        DispatchQueue.main.async { onResolve(view.window) }
     }
 }
 

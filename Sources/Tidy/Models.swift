@@ -42,6 +42,8 @@ struct DisplayInfo: Identifiable, Hashable {
 
 struct SystemSnapshot {
     var cpuPercent: Double = 0
+    var gpuPercent: Double = 0
+    var gpuUsageAvailable = false
     var memoryUsed: UInt64 = 0
     var memoryTotal: UInt64 = 0
     var diskUsed: UInt64 = 0
@@ -49,6 +51,7 @@ struct SystemSnapshot {
     var gpuName = "Integrated GPU"
     var cpuHistory: [Double] = Array(repeating: 0, count: 30)
     var memoryHistory: [Double] = Array(repeating: 0, count: 30)
+    var gpuHistory: [Double] = Array(repeating: 0, count: 30)
 
     var memoryPercent: Double { memoryTotal == 0 ? 0 : Double(memoryUsed) / Double(memoryTotal) * 100 }
     var diskPercent: Double { diskTotal == 0 ? 0 : Double(diskUsed) / Double(diskTotal) * 100 }

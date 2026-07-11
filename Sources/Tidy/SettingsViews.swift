@@ -1,27 +1,72 @@
 import SwiftUI
 
 struct CleaningView: View {
-    @EnvironmentObject private var state: AppState
+    @ObservedObject var service: CleanerService
+    @State private var confirmsDeletion = false
+
+    private var categories: [String] {
+        Array(Set(service.items.map(\.category))).sorted()
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             SectionHeader(title: "Make space, intentionally", subtitle: "Review caches, logs and Trash before anything is removed.")
-            HStack { Text(state.cleaner.status).foregroundStyle(.secondary); Spacer(); Button("Scan") { state.cleaner.scan() }.buttonStyle(.borderedProminent).disabled(state.cleaner.isScanning) }
-            List(state.cleaner.items) { item in
-                Button { state.cleaner.toggle(item) } label: { HStack(spacing: 14) {
-                    Image(systemName: item.selected ? "checkmark.circle.fill" : "circle").foregroundStyle(item.selected ? .indigo : .secondary)
-                    VStack(alignment: .leading) { Text(item.name); Text(item.location).font(.caption).foregroundStyle(.secondary) }
-                    Spacer(); Text(item.size.tidySize).monospacedDigit().foregroundStyle(.secondary)
-                } }.buttonStyle(.plain)
-            }.overlay { if state.cleaner.items.isEmpty && !state.cleaner.isScanning { ContentUnavailableView("No scan yet", systemImage: "sparkle.magnifyingglass", description: Text("Select Scan to find common reclaimable files.")) } }
-            HStack { Text("Selected items are emptied permanently.").font(.caption).foregroundStyle(.secondary); Spacer(); Button("Clean selected") { state.cleaner.cleanSelected() }.buttonStyle(.borderedProminent).disabled(state.cleaner.items.allSatisfy { !$0.selected }) }
-        }.padding(28)
+            HStack {
+                Text(service.status).foregroundStyle(.secondary)
+                Spacer()
+                if service.isScanning { ProgressView().controlSize(.small) }
+                Button("Scan again") { service.scan() }.disabled(service.isScanning)
+                Button(service.allSelected ? "Select none" : "Select all") { service.setAllSelected(!service.allSelected) }
+                    .disabled(service.items.isEmpty)
+            }
+            List {
+                ForEach(categories, id: \.self) { category in
+                    Section(category) {
+                        ForEach(service.items.filter { $0.category == category }) { item in
+                            Button { service.toggle(item) } label: {
+                                HStack(spacing: 14) {
+                                    Image(systemName: item.selected ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(item.selected ? .indigo : .secondary)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(item.name)
+                                        Text(item.location).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                                    }
+                                    Spacer()
+                                    Text(item.size.tidySize).monospacedDigit().foregroundStyle(.secondary)
+                                }
+                            }.buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+            .overlay {
+                if service.items.isEmpty && !service.isScanning {
+                    ContentUnavailableView("No reclaimable folders found", systemImage: "sparkle.magnifyingglass")
+                }
+            }
+            HStack {
+                Text("\(service.selectedCount) selected · \(service.selectedSize.tidySize). Selected items are removed permanently.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button("Clean selected", role: .destructive) { confirmsDeletion = true }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(service.selectedCount == 0 || service.isScanning)
+            }
+        }
+        .padding(28)
+        .task { if service.items.isEmpty && !service.isScanning { service.scan() } }
+        .confirmationDialog("Delete \(service.selectedCount) selected items?", isPresented: $confirmsDeletion) {
+            Button("Delete permanently", role: .destructive) { service.cleanSelected() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This will permanently remove \(service.selectedSize.tidySize). This action cannot be undone.")
+        }
     }
 }
 
 struct DisplayView: View {
-    @EnvironmentObject private var state: AppState
+    @ObservedObject var service: DisplayService
     @State private var selectedMode = ""
-    private var service: DisplayService { state.display }
     var body: some View {
         Form {
             Section { SectionHeader(title: "Displays, precisely tuned", subtitle: "Use macOS display modes and DDC controls where your monitor supports them.") }
@@ -46,8 +91,7 @@ struct DisplayView: View {
 }
 
 struct MouseView: View {
-    @EnvironmentObject private var state: AppState
-    private var service: MouseService { state.mouse }
+    @ObservedObject var service: MouseService
     var body: some View {
         Form {
             Section { SectionHeader(title: "Pointer, your way", subtitle: "Keep trackpad and mouse behaviour distinct, with settings retained across launches.") }

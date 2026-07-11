@@ -23,14 +23,14 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Build release executable
-        run: swift build --configuration release
+      - name: Build release app
+        run: xcodebuild -project Tidy.xcodeproj -scheme Tidy -configuration Release -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO build
 
       - name: Package executable
         if: github.event_name == 'release'
         run: |
           mkdir -p artifact
-          ditto -c -k --sequesterRsrc --keepParent .build/release/Tidy artifact/Tidy-macos.zip
+          ditto -c -k --sequesterRsrc --keepParent .build/xcode/Build/Products/Release/Tidy.app artifact/Tidy-macos.zip
 
       - name: Attach release artifact
         if: github.event_name == 'release'

@@ -5,7 +5,7 @@ struct TidyApp: App {
     @StateObject private var appState = AppState()
 
     var body: some Scene {
-        WindowGroup {
+        Window("Tidy", id: "main") {
             ContentView()
                 .environmentObject(appState)
                 .frame(minWidth: 980, minHeight: 650)
@@ -13,16 +13,19 @@ struct TidyApp: App {
         .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(after: .appInfo) {
-                Button("Refresh system status") { appState.monitor.refresh() }
+                Button("Refresh system status") {
+                    appState.monitor.refresh()
+                    appState.statusMonitor.refresh()
+                }
                     .keyboardShortcut("r", modifiers: [.command])
             }
         }
 
         MenuBarExtra {
-            StatusMenu()
+            StatusMenu(monitor: appState.statusMonitor)
                 .environmentObject(appState)
         } label: {
-            StatusLabel(snapshot: appState.monitor.snapshot)
+            StatusLabel(monitor: appState.statusMonitor)
         }
         .menuBarExtraStyle(.window)
     }
