@@ -1,0 +1,39 @@
+name: Build Tidy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build macOS executable
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build release executable
+        run: swift build --configuration release
+
+      - name: Package executable
+        if: github.event_name == 'release'
+        run: |
+          mkdir -p artifact
+          ditto -c -k --sequesterRsrc --keepParent .build/release/Tidy artifact/Tidy-macos.zip
+
+      - name: Attach release artifact
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" artifact/Tidy-macos.zip --clobber
