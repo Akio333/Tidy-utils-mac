@@ -26,14 +26,15 @@ jobs:
       - name: Build release app
         run: xcodebuild -project Tidy.xcodeproj -scheme Tidy -configuration Release -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO build
 
-      - name: Package executable
+      - name: Package release artifacts
         if: github.event_name == 'release'
         run: |
           mkdir -p artifact
           ditto -c -k --sequesterRsrc --keepParent .build/xcode/Build/Products/Release/Tidy.app artifact/Tidy-macos.zip
+          ./Scripts/package-dmg.sh .build/xcode/Build/Products/Release/Tidy.app artifact/Tidy-macos.dmg "Tidy ${{ github.event.release.tag_name }}"
 
       - name: Attach release artifact
         if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" artifact/Tidy-macos.zip --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" artifact/Tidy-macos.zip artifact/Tidy-macos.dmg --clobber
