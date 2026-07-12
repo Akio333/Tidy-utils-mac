@@ -21,7 +21,7 @@ struct ContentView: View {
         } detail: {
             Group {
                 switch state.selectedSection {
-                case .dashboard: DashboardView(monitor: state.monitor)
+                case .dashboard: DashboardView(monitor: state.monitor, appState: state)
                 case .cleaning: CleaningView(service: state.cleaner)
                 case .displays: DisplayView(service: state.display)
                 case .mouse: MouseView(service: state.mouse)
