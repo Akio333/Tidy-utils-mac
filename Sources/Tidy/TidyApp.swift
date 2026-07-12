@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct TidyApp: App {
+    @NSApplicationDelegateAdaptor(TidyApplicationDelegate.self) private var appDelegate
     @StateObject private var appState = AppState()
 
     var body: some Scene {
@@ -28,5 +29,11 @@ struct TidyApp: App {
             StatusLabel(monitor: appState.statusMonitor)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+final class TidyApplicationDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApplication.shared.setActivationPolicy(.accessory)
     }
 }

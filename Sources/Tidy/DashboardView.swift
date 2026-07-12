@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @ObservedObject var monitor: SystemMonitor
+    @ObservedObject var appState: AppState
     private var snapshot: SystemSnapshot { monitor.snapshot }
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 26) {
@@ -13,8 +14,31 @@ struct DashboardView: View {
                 MetricCard(title: "Storage", value: "\(Int(snapshot.diskPercent))%", detail: "\(snapshot.diskUsed.tidySize) used", symbol: "internaldrive", tint: .orange, progress: snapshot.diskPercent / 100)
             }
             GroupBox("Activity") { HStack(spacing: 24) { UsageChart(values: snapshot.cpuHistory, color: .blue, title: "CPU"); UsageChart(values: snapshot.cpuTemperatureHistory, color: .red, title: "CPU temperature"); UsageChart(values: snapshot.memoryHistory, color: .purple, title: "Memory") }.padding(8) }
+            GroupBox("App behavior") {
+                VStack(alignment: .leading, spacing: 10) {
+                    Toggle("Keep Tidy in the menu bar when the window closes", isOn: closeBehaviorBinding)
+                    Toggle("Launch Tidy at login", isOn: launchAtLoginBinding)
+                    if !appState.launchAtLoginStatus.isEmpty {
+                        Text(appState.launchAtLoginStatus).font(.caption).foregroundStyle(.secondary)
+                    }
+                }.padding(8)
+            }
             HStack { Label(snapshot.gpuName, systemImage: "rectangle.inset.filled.and.person.filled").foregroundStyle(.secondary); Spacer(); Text("Updates every second").font(.caption).foregroundStyle(.tertiary); Button("Refresh") { monitor.refresh() }.buttonStyle(.bordered) }
         }.padding(28) }.background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var closeBehaviorBinding: Binding<Bool> {
+        Binding(
+            get: { appState.keepInMenuBarWhenWindowCloses },
+            set: { value in appState.setKeepInMenuBarWhenWindowCloses(value) }
+        )
+    }
+
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding(
+            get: { appState.launchAtLogin },
+            set: { value in appState.setLaunchAtLogin(value) }
+        )
     }
 }
 

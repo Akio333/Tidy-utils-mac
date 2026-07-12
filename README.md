@@ -32,6 +32,7 @@ To package a locally built app as a DMG:
 
 ## Design notes
 
+- Closing the main window keeps Tidy running in the menu bar by default. Overview includes controls to instead quit on close and to launch Tidy at login.
 - Cleaning scans user cache, logs, Trash, and Homebrew-cache locations and always shows targets before removal.
 - Display modes use CoreGraphics. DDC brightness and volume call a locally installed `ddcutil` executable when available.
 - CPU temperature uses Tidy's bundled read-only Apple-silicon sensor adapter. On Macs that do not expose compatible sensors, the interface reports the reading as unavailable.
