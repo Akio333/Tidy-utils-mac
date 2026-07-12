@@ -27,11 +27,6 @@ struct ContentView: View {
                 case .mouse: MouseView(service: state.mouse)
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text(state.selectedSection.title).font(.headline)
-                }
-            }
         }
         .tint(.indigo)
         .background(MainWindowReader { window in
@@ -59,7 +54,7 @@ struct SectionHeader: View {
     let subtitle: String
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(title).font(.system(size: 28, weight: .bold, design: .rounded))
+            Text(title).font(.title2.weight(.semibold))
             Text(subtitle).foregroundStyle(.secondary)
         }
     }

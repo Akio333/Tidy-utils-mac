@@ -10,7 +10,7 @@ struct CleaningView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            SectionHeader(title: "Make space, intentionally", subtitle: "Review caches, logs and Trash before anything is removed.")
+            SectionHeader(title: "Cleanup", subtitle: "Review files before removing them.")
             HStack {
                 Text(service.status).foregroundStyle(.secondary)
                 Spacer()
@@ -69,14 +69,17 @@ struct DisplayView: View {
     @State private var selectedMode = ""
     var body: some View {
         Form {
-            Section { SectionHeader(title: "Displays, precisely tuned", subtitle: "Use macOS display modes and DDC controls where your monitor supports them.") }
+            Section { SectionHeader(title: "Display settings", subtitle: "Display modes and external monitor controls.") }
             Section("Connected displays") {
                 Picker("Display", selection: binding(\DisplayService.selectedDisplayID)) { ForEach(service.displays) { display in Text("\(display.name) · \(display.width) × \(display.height)").tag(Optional(display.id)) } }
                 Button("Refresh displays") { service.refresh() }
             }
             Section("Resolution") {
                 Picker("Mode", selection: $selectedMode) { Text("Choose a mode").tag(""); ForEach(service.availableModes(), id: \.self) { mode in Text("\(mode.width) × \(mode.height) · \(Int(mode.refreshRate)) Hz").tag("\(mode.width)x\(mode.height)-\(mode.refreshRate)") } }
-                Button("Apply resolution") { if let mode = service.availableModes().first(where: { "\($0.width)x\($0.height)-\($0.refreshRate)" == selectedMode }) { service.applyDisplayMode(mode) } }.disabled(selectedMode.isEmpty)
+                    .onChange(of: selectedMode) { _, modeIdentifier in
+                        guard let mode = service.availableModes().first(where: { "\($0.width)x\($0.height)-\($0.refreshRate)" == modeIdentifier }) else { return }
+                        service.applyDisplayMode(mode)
+                    }
             }
             Section("External monitor controls") {
                 Slider(value: binding(\DisplayService.brightness), in: 0...100, step: 1) { Text("Brightness") } minimumValueLabel: { Image(systemName: "sun.min") } maximumValueLabel: { Image(systemName: "sun.max") }.onChange(of: service.brightness) { service.setBrightness() }
@@ -94,15 +97,14 @@ struct MouseView: View {
     @ObservedObject var service: MouseService
     var body: some View {
         Form {
-            Section { SectionHeader(title: "Pointer, your way", subtitle: "Keep trackpad and mouse behaviour distinct, with settings retained across launches.") }
+            Section { SectionHeader(title: "Mouse settings", subtitle: "Scrolling, pointer, and button preferences.") }
             Section("Scrolling") {
                 Toggle("Natural scrolling on trackpad", isOn: binding(\MouseService.trackpadNaturalScrolling))
                 Toggle("Natural scrolling on mouse", isOn: binding(\MouseService.mouseNaturalScrolling))
                 Text("Per-device scrolling needs an accessibility event-tap helper to take effect. The preference is already retained here.").font(.caption).foregroundStyle(.secondary)
             }
             Section("Pointer") {
-                Toggle("Disable mouse acceleration", isOn: binding(\MouseService.disableAcceleration))
-                Button("Apply acceleration setting") { service.applyAcceleration() }
+                Toggle("Disable mouse acceleration", isOn: accelerationBinding)
             }
             Section("Extra buttons") {
                 Picker("Button mapping", selection: binding(\MouseService.extraButtonAction)) { Text("Back / Forward").tag("Back / Forward"); Text("Mission Control").tag("Mission Control"); Text("No action").tag("No action") }
@@ -112,4 +114,13 @@ struct MouseView: View {
         }.formStyle(.grouped).padding(18)
     }
     private func binding<T>(_ keyPath: ReferenceWritableKeyPath<MouseService, T>) -> Binding<T> { Binding(get: { service[keyPath: keyPath] }, set: { service[keyPath: keyPath] = $0 }) }
+    private var accelerationBinding: Binding<Bool> {
+        Binding(
+            get: { service.disableAcceleration },
+            set: { value in
+                service.disableAcceleration = value
+                service.applyAcceleration()
+            }
+        )
+    }
 }

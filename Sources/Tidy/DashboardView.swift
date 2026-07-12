@@ -5,7 +5,7 @@ struct DashboardView: View {
     private var snapshot: SystemSnapshot { monitor.snapshot }
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 26) {
-            SectionHeader(title: "Your Mac, at a glance", subtitle: "Live system health and a quieter way to maintain it.")
+            SectionHeader(title: "Overview", subtitle: "Current system status")
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 14) {
                 MetricCard(title: "CPU", value: "\(Int(snapshot.cpuPercent))%", detail: "Current processor load", symbol: "cpu", tint: .blue, progress: snapshot.cpuPercent / 100)
                 MetricCard(title: "Memory", value: "\(Int(snapshot.memoryPercent))%", detail: "\(snapshot.memoryUsed.tidySize) in use", symbol: "memorychip", tint: .purple, progress: snapshot.memoryPercent / 100)
