@@ -5,5 +5,8 @@ let package = Package(
     name: "Tidy",
     platforms: [.macOS(.v14)],
     products: [.executable(name: "Tidy", targets: ["Tidy"])],
-    targets: [.executableTarget(name: "Tidy")]
+    targets: [
+        .target(name: "TidyTemperatureReader", path: "Sources/TidyTemperatureReader", publicHeadersPath: "include"),
+        .executableTarget(name: "Tidy", dependencies: ["TidyTemperatureReader"])
+    ]
 )

@@ -34,6 +34,7 @@ To package a locally built app as a DMG:
 
 - Cleaning scans user cache, logs, Trash, and Homebrew-cache locations and always shows targets before removal.
 - Display modes use CoreGraphics. DDC brightness and volume call a locally installed `ddcutil` executable when available.
+- CPU temperature uses Tidy's bundled read-only Apple-silicon sensor adapter. On Macs that do not expose compatible sensors, the interface reports the reading as unavailable.
 - Hardware behaviours that macOS prevents ordinary apps from changing (built-in panel disable and per-device event interception) are deliberately surfaced as persisted preferences with clear capability notes. A future privileged/accessibility helper can apply them.
 
 ## Contributing

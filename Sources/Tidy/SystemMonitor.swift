@@ -3,6 +3,9 @@ import AppKit
 import SwiftUI
 import IOKit
 import Metal
+#if SWIFT_PACKAGE
+import TidyTemperatureReader
+#endif
 
 @MainActor
 final class SystemMonitor: ObservableObject {
@@ -30,6 +33,7 @@ final class SystemMonitor: ObservableObject {
         let freeDisk = (disk[.systemFreeSize] as? NSNumber)?.uint64Value ?? 0
         let usedDisk = totalDisk > freeDisk ? totalDisk - freeDisk : 0
         let gpu = gpuUsage()
+        let temperature = cpuTemperature()
         snapshot.cpuPercent = cpu
         snapshot.memoryUsed = usedMemory
         snapshot.memoryTotal = memory
@@ -38,7 +42,10 @@ final class SystemMonitor: ObservableObject {
         snapshot.gpuName = graphicsName()
         snapshot.gpuPercent = gpu.value
         snapshot.gpuUsageAvailable = gpu.available
+        snapshot.cpuTemperature = temperature ?? 0
+        snapshot.cpuTemperatureAvailable = temperature != nil
         snapshot.cpuHistory = Array((snapshot.cpuHistory + [cpu]).suffix(30))
+        snapshot.cpuTemperatureHistory = Array((snapshot.cpuTemperatureHistory + [temperature ?? 0]).suffix(30))
         snapshot.memoryHistory = Array((snapshot.memoryHistory + [snapshot.memoryPercent]).suffix(30))
         snapshot.gpuHistory = Array((snapshot.gpuHistory + [gpu.value]).suffix(30))
     }
@@ -102,6 +109,11 @@ final class SystemMonitor: ObservableObject {
         guard let value = readings.max() else { return (0, false) }
         return (min(max(value, 0), 100), true)
     }
+
+    private func cpuTemperature() -> Double? {
+        let value = TidyCPUTemperature()
+        return (0...130).contains(value) ? value : nil
+    }
 }
 
 struct StatusLabel: View {
@@ -144,6 +156,7 @@ struct StatusMenu: View {
 
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 9) {
                 statusRow("CPU", icon: "cpu", value: "\(Int(snapshot.cpuPercent))%")
+                statusRow("CPU temperature", icon: "thermometer.medium", value: snapshot.cpuTemperatureText)
                 statusRow("Memory", icon: "memorychip", value: "\(snapshot.memoryUsed.tidySize) of \(snapshot.memoryTotal.tidySize)")
                 statusRow("GPU", icon: "square.stack.3d.up.fill", value: snapshot.gpuUsageAvailable ? "\(Int(snapshot.gpuPercent))% · \(snapshot.gpuName)" : "Unavailable · \(snapshot.gpuName)")
                 statusRow("Storage", icon: "internaldrive", value: "\(snapshot.diskUsed.tidySize) of \(snapshot.diskTotal.tidySize)")

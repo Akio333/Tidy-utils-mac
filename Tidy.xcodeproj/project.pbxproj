@@ -15,6 +15,7 @@
 		A10000000000000000000007 /* SettingsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* SettingsViews.swift */; };
 		A10000000000000000000008 /* SystemMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* SystemMonitor.swift */; };
 		A10000000000000000000009 /* TidyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* TidyApp.swift */; };
+		A10000000000000000000010 /* TidyTemperatureReader.c in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* TidyTemperatureReader.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,9 @@
 		A20000000000000000000007 /* SettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViews.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* SystemMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMonitor.swift; sourceTree = "<group>"; };
 		A20000000000000000000009 /* TidyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TidyApp.swift; sourceTree = "<group>"; };
+		A20000000000000000000010 /* TidyTemperatureReader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Sources/TidyTemperatureReader/TidyTemperatureReader.c; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000011 /* TidyTemperatureReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sources/TidyTemperatureReader/include/TidyTemperatureReader.h; sourceTree = SOURCE_ROOT; };
+		A20000000000000000000012 /* Tidy-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tidy-Bridging-Header.h; sourceTree = "<group>"; };
 		A30000000000000000000001 /* Tidy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tidy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -39,6 +43,8 @@
 			isa = PBXGroup;
 			children = (
 				A50000000000000000000002 /* Tidy */,
+				A20000000000000000000010 /* TidyTemperatureReader.c */,
+				A20000000000000000000011 /* TidyTemperatureReader.h */,
 				A50000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,6 +61,7 @@
 				A20000000000000000000007 /* SettingsViews.swift */,
 				A20000000000000000000008 /* SystemMonitor.swift */,
 				A20000000000000000000009 /* TidyApp.swift */,
+				A20000000000000000000012 /* Tidy-Bridging-Header.h */,
 			);
 			path = Sources/Tidy;
 			sourceTree = SOURCE_ROOT;
@@ -115,6 +122,7 @@
 				A10000000000000000000007 /* SettingsViews.swift in Sources */,
 				A10000000000000000000008 /* SystemMonitor.swift in Sources */,
 				A10000000000000000000009 /* TidyApp.swift in Sources */,
+				A10000000000000000000010 /* TidyTemperatureReader.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,8 +131,8 @@
 /* Begin XCBuildConfiguration section */
 		AA0000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 6.0;}; name = Debug; };
 		AA0000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_VERSION = 6.0;}; name = Release; };
-		AA0000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Tidy; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.0.2; PRODUCT_BUNDLE_IDENTIFIER = com.akio.Tidy; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 6.0;}; name = Debug; };
-		AA0000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Tidy; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.0.2; PRODUCT_BUNDLE_IDENTIFIER = com.akio.Tidy; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 6.0;}; name = Release; };
+		AA0000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = YES; HEADER_SEARCH_PATHS = "$(SRCROOT)/Sources/TidyTemperatureReader/include"; INFOPLIST_KEY_CFBundleDisplayName = Tidy; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.0.2; PRODUCT_BUNDLE_IDENTIFIER = com.akio.Tidy; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Sources/Tidy/Tidy-Bridging-Header.h"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 6.0;}; name = Debug; };
+		AA0000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = YES; HEADER_SEARCH_PATHS = "$(SRCROOT)/Sources/TidyTemperatureReader/include"; INFOPLIST_KEY_CFBundleDisplayName = Tidy; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities"; MACOSX_DEPLOYMENT_TARGET = 14.0; MARKETING_VERSION = 0.0.2; PRODUCT_BUNDLE_IDENTIFIER = com.akio.Tidy; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Sources/Tidy/Tidy-Bridging-Header.h"; SWIFT_VERSION = 6.0;}; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
