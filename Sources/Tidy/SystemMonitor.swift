@@ -120,13 +120,10 @@ struct StatusLabel: View {
     @ObservedObject var monitor: SystemMonitor
     private var snapshot: SystemSnapshot { monitor.snapshot }
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "cpu")
+        HStack(spacing: 5) {
+            Image(systemName: "waveform.path.ecg")
+                .foregroundStyle(TidyTheme.accent)
             Text("\(Int(snapshot.cpuPercent))%")
-                .monospacedDigit()
-            Divider().frame(height: 12)
-            Image(systemName: "memorychip")
-            Text("\(Int(snapshot.memoryPercent))%")
                 .monospacedDigit()
         }
         .help("CPU \(Int(snapshot.cpuPercent))% · Memory \(Int(snapshot.memoryPercent))%")
@@ -139,32 +136,53 @@ struct StatusMenu: View {
     private var snapshot: SystemSnapshot { monitor.snapshot }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Label("Tidy Monitor", systemImage: "waveform.path.ecg").font(.headline)
+                HStack(spacing: 11) {
+                    SymbolTile(symbol: "waveform.path.ecg", tint: TidyTheme.accent, size: 38)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Tidy Monitor")
+                            .font(.headline)
+                        Text("Updated every 5 seconds")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Spacer()
-                Button { monitor.refresh() } label: { Image(systemName: "arrow.clockwise") }
-                    .buttonStyle(.plain)
+                Button { monitor.refresh() } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .frame(width: 28, height: 28)
+                }
+                    .buttonStyle(.borderless)
                     .help("Refresh now")
             }
 
-            HStack(spacing: 20) {
-                UsageChart(values: snapshot.cpuHistory, color: .blue, title: "CPU · \(Int(snapshot.cpuPercent))%")
-                UsageChart(values: snapshot.memoryHistory, color: .purple, title: "Memory · \(Int(snapshot.memoryPercent))%")
+            HStack(spacing: 10) {
+                PopupMetric(title: "CPU", value: "\(Int(snapshot.cpuPercent))%", symbol: "cpu", tint: TidyTheme.cyan)
+                PopupMetric(title: "Memory", value: "\(Int(snapshot.memoryPercent))%", symbol: "memorychip", tint: TidyTheme.purple)
+                PopupMetric(title: "Temp", value: snapshot.cpuTemperatureAvailable ? snapshot.cpuTemperatureText : "—", symbol: "thermometer.medium", tint: TidyTheme.red)
             }
-            .frame(height: 118)
 
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 9) {
-                statusRow("CPU", icon: "cpu", value: "\(Int(snapshot.cpuPercent))%")
+            HStack(spacing: 10) {
+                UsageChart(values: snapshot.cpuHistory, color: TidyTheme.cyan, title: "CPU", value: "\(Int(snapshot.cpuPercent))%")
+                UsageChart(values: snapshot.memoryHistory, color: TidyTheme.purple, title: "Memory", value: "\(Int(snapshot.memoryPercent))%")
+            }
+
+            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 10) {
                 statusRow("CPU temperature", icon: "thermometer.medium", value: snapshot.cpuTemperatureText)
                 statusRow("Memory", icon: "memorychip", value: "\(snapshot.memoryUsed.tidySize) of \(snapshot.memoryTotal.tidySize)")
                 statusRow("GPU", icon: "square.stack.3d.up.fill", value: snapshot.gpuUsageAvailable ? "\(Int(snapshot.gpuPercent))% · \(snapshot.gpuName)" : "Unavailable · \(snapshot.gpuName)")
                 statusRow("Storage", icon: "internaldrive", value: "\(snapshot.diskUsed.tidySize) of \(snapshot.diskTotal.tidySize)")
             }
+            .padding(14)
+            .background(.primary.opacity(0.035), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             Divider()
 
-            Text("Open Tidy").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Text("OPEN TIDY")
+                .font(.caption2.weight(.semibold))
+                .tracking(0.7)
+                .foregroundStyle(.secondary)
             HStack(spacing: 8) {
                 destinationButton(.dashboard)
                 destinationButton(.cleaning)
@@ -176,8 +194,8 @@ struct StatusMenu: View {
             Button("Quit Tidy") { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.plain)
         }
-        .padding(16)
-        .frame(width: 430)
+        .padding(18)
+        .frame(width: 460)
     }
 
     @ViewBuilder
@@ -202,12 +220,44 @@ struct StatusMenu: View {
             }
         } label: {
             VStack(spacing: 5) {
-                Image(systemName: section.icon).font(.title3)
+                Image(systemName: section.icon)
+                    .font(.title3)
+                    .foregroundStyle(section.tint)
                 Text(section.title).font(.caption)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
+            .padding(.vertical, 9)
         }
         .buttonStyle(.bordered)
+        .tint(section.tint)
+    }
+}
+
+private struct PopupMetric: View {
+    let title: String
+    let value: String
+    let symbol: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 9) {
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 26, height: 26)
+                .background(tint.opacity(0.11), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.caption2).foregroundStyle(.secondary)
+                Text(value).font(.caption.weight(.semibold).monospacedDigit())
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.16), lineWidth: 0.7)
+        }
     }
 }

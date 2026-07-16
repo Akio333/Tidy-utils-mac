@@ -2,7 +2,7 @@
 
 A native SwiftUI macOS utility that brings cleaning, display controls, pointer preferences, and a compact system monitor together.
 
-Current version: **0.0.3**
+Current version: **0.0.4**
 
 Tidy is a hobby project built primarily for personal use. It is under active development, and contributions of all kinds are welcome—bug reports, feature ideas, documentation, design feedback, and code.
 
@@ -27,7 +27,7 @@ For a personal, unsigned build, macOS can open it through Finder’s Control-cli
 To package a locally built app as a DMG:
 
 ```sh
-./Scripts/package-dmg.sh .build/xcode/Build/Products/Release/Tidy.app artifact/Tidy-macos.dmg "Tidy 0.0.3"
+./Scripts/package-dmg.sh .build/xcode/Build/Products/Release/Tidy.app artifact/Tidy-macos.dmg "Tidy 0.0.4"
 ```
 
 ## Design notes
